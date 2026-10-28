@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{layout :: head('Início')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<!-- O nome do responsável vem do próprio pet; sem pets, a saudação fica genérica -->
+<main class="container"
+      th:with="nomeResponsavel=${#lists.isEmpty(pets)} ? null : ${pets[0].responsavelNome},
+               totalProximas=${#lists.size(proximasConsultas)}">
+
+    <div th:replace="~{layout :: mensagens}"></div>
+
+    <!-- ---------- Boas-vindas ---------- -->
+    <section class="destaque">
+        <span class="sobretitulo">Painel do responsável</span>
+
+        <h1 th:if="${nomeResponsavel}"
+            th:text="|Olá, ${#strings.arraySplit(nomeResponsavel, ' ')[0]}|">Olá</h1>
+        <h1 th:unless="${nomeResponsavel}">Olá! Que bom ter você aqui</h1>
+
+        <p class="mb-0" th:if="${totalProximas > 0}"
+           th:text="${totalProximas == 1}
+                    ? 'Você tem 1 consulta nas próximas 48 horas.'
+                    : |Você tem ${totalProximas} consultas nas próximas 48 horas.|">
+            Resumo
+        </p>
+        <p class="mb-0" th:if="${totalProximas == 0 and totalPets > 0}">
+            Nenhuma consulta nas próximas 48 horas. Tudo tranquilo por aqui.
+        </p>
+        <p class="mb-0" th:if="${totalPets == 0}">
+            Comece cadastrando seu primeiro pet para agendar consultas.
+        </p>
+
+        <div class="destaque-numeros">
+            <div class="destaque-numero">
+                <strong th:text="${totalPets}">0</strong>
+                <span th:text="${totalPets == 1} ? 'pet cadastrado' : 'pets cadastrados'">pets</span>
+            </div>
+            <div class="destaque-numero">
+                <strong th:text="${totalProximas}">0</strong>
+                <span>nas próximas 48h</span>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <a th:if="${totalPets > 0}" th:href="@{/app/consultas/nova}"
+               class="btn btn-claro">Agendar consulta</a>
+            <a th:href="@{/app/pets/novo}"
+               th:class="${totalPets > 0} ? 'btn btn-contorno-claro' : 'btn btn-claro'">
+                Cadastrar pet
+            </a>
+        </div>
+    </section>
+
+    <div class="row g-4">
+
+        <!-- ---------- Próximas consultas ---------- -->
+        <section class="col-lg-7">
+            <div class="secao-topo">
+                <h2>Próximas consultas <span class="contador" th:text="${totalProximas}">0</span></h2>
+                <a th:href="@{/app/consultas}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+            </div>
+
+            <div th:if="${totalProximas == 0}" class="vazio">
+                <span th:replace="~{layout :: icone-vazio}"></span>
+                <p class="vazio-titulo">Agenda livre</p>
+                <p class="vazio-texto">Aqui aparecem as consultas marcadas para as próximas 48 horas.</p>
+                <a th:if="${totalPets > 0}" th:href="@{/app/consultas/nova}"
+                   class="btn btn-primary">Agendar consulta</a>
+            </div>
+
+            <div class="lista-consultas" th:unless="${totalProximas == 0}">
+                <a th:each="c : ${proximasConsultas}"
+                   th:href="@{/app/pets/{id}(id=${c.petId})}"
+                   class="card-link rounded-3">
+                    <div th:replace="~{layout :: item-consulta(${c})}"></div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ---------- Pets ---------- -->
+        <section class="col-lg-5">
+            <div class="secao-topo">
+                <h2>Seus pets <span class="contador" th:text="${totalPets}">0</span></h2>
+                <a th:href="@{/app/pets}" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+            </div>
+
+            <div th:if="${totalPets == 0}" class="vazio">
+                <span th:replace="~{layout :: icone-vazio}"></span>
+                <p class="vazio-titulo">Nenhum pet ainda</p>
+                <p class="vazio-texto">Cadastre seu pet para acompanhar consultas e histórico clínico.</p>
+                <a th:href="@{/app/pets/novo}" class="btn btn-primary">Cadastrar pet</a>
+            </div>
+
+            <div class="lista-consultas" th:unless="${totalPets == 0}">
+                <a th:each="p : ${pets}"
+                   th:href="@{/app/pets/{id}(id=${p.id})}"
+                   class="card card-link">
+                    <div class="card-body d-flex align-items-center gap-3 py-3">
+                        <span th:replace="~{layout :: avatar(${p.nome}, '')}"></span>
+                        <div class="flex-grow-1 min-w-0">
+                            <p class="mb-0 fw-semibold" th:text="${p.nome}">Nome</p>
+                            <p class="mb-0 small text-secondary"
+                               th:text="${p.raca} ?: 'Raça não informada'">Raça</p>
+                        </div>
+                        <span class="small proxima text-end" th:if="${p.proximaConsulta}"
+                              th:text="${#temporals.format(p.proximaConsulta, 'dd/MM HH:mm')}">data</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

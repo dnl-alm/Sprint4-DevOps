@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head('Entrar')}"></head>
+
+<body>
+
+<main class="auth">
+
+    <aside th:replace="~{layout :: painel-marca(
+            'A saúde do seu pet, acompanhada de perto.',
+            'Consultas, agenda e histórico clínico reunidos em um só lugar, para responsáveis e veterinários.')}"></aside>
+
+    <section class="auth-conteudo">
+        <div class="auth-formulario">
+
+            <h2 class="auth-titulo">Bem-vindo de volta</h2>
+            <p class="auth-subtitulo">Entre com o e-mail e a senha da sua conta.</p>
+
+            <div th:if="${param.erro}" class="alert alert-danger" role="alert">
+                E-mail ou senha inválidos.
+            </div>
+
+            <div th:if="${param.logout}" class="alert alert-success" role="alert">
+                Você saiu da sua conta.
+            </div>
+
+            <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+
+            <!-- O POST vai para o filtro do Spring Security, não para um controller.
+                 Os campos precisam se chamar username e password. -->
+            <form th:action="@{/login}" method="post">
+
+                <div class="mb-3">
+                    <label for="username" class="form-label">E-mail</label>
+                    <input type="email" id="username" name="username"
+                           class="form-control" required autofocus
+                           autocomplete="username" placeholder="voce@email.com">
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label">Senha</label>
+                    <div class="input-group">
+                        <input type="password" id="password" name="password"
+                               class="form-control" required
+                               autocomplete="current-password">
+                        <button type="button" class="btn btn-outline-secondary"
+                                data-alternar-senha="password"
+                                aria-controls="password" aria-pressed="false">Mostrar</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">Entrar</button>
+            </form>
+
+            <p class="auth-alternativa">
+                Ainda não tem conta?
+                <a th:href="@{/cadastro}">Criar conta</a>
+            </p>
+        </div>
+    </section>
+</main>
+
+<th:block th:replace="~{layout :: scripts}"></th:block>
+
+</body>
+</html>
